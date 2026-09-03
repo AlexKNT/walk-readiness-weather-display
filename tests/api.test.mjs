@@ -303,21 +303,6 @@ test("fetchCurrentConditions combines current values from both endpoints", async
   assert.equal(fetch.calls.length, 2);
 });
 
-test("fetchCurrentConditions calls both endpoints", async () => {
-  const fetch = makeFetch((url) => {
-    if (url.includes("air-quality")) return jsonResponse(airQualityBody);
-    return jsonResponse(forecastBody);
-  });
-  const { api } = loadApi(fetch);
-
-  await api.fetchCurrentConditions(56.9, 24.1);
-
-  const urls = fetch.calls;
-  assert.equal(urls.length, 2);
-  assert.ok(urls.some((u) => u.startsWith("https://api.open-meteo.com/v1/forecast?")));
-  assert.ok(urls.some((u) => u.startsWith("https://air-quality-api.open-meteo.com/v1/air-quality?")));
-});
-
 test("fetchCurrentConditions normalizes missing current fields to null", async () => {
   const fetch = makeFetch((url) => {
     if (url.includes("air-quality")) {

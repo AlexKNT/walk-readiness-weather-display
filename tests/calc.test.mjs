@@ -59,11 +59,6 @@ test("dewPointFallback equals temperature at 100% humidity", () => {
   close(calc.dewPointFallback(20, 100), 20, 1e-9, "dewPointFallback(20, 100)");
 });
 
-test("dewPointFallback computes a hot, humid dew point", () => {
-  const calc = loadCalc();
-  close(calc.dewPointFallback(30, 80), 26.17, 0.1, "dewPointFallback(30, 80)");
-});
-
 test("dewPointFallback returns null for non-finite temperature", () => {
   const calc = loadCalc();
   assert.equal(calc.dewPointFallback(NaN, 55), null);
@@ -297,30 +292,18 @@ test("deriveSignals normalizes numeric strings", () => {
   assert.equal(s.aqiSignal, "CAUTION");
 });
 
-test("deriveSignals returns all-null values for empty input", () => {
+test("deriveSignals returns all-null values for empty or null input", () => {
   const calc = loadCalc();
-  const s = calc.deriveSignals({});
+  for (const input of [{}, null]) {
+    const s = calc.deriveSignals(input);
 
-  assert.equal(s.temperature, null);
-  assert.equal(s.relativeHumidity, null);
-  assert.equal(s.dewPoint, null);
-  assert.equal(s.heatIndex, null);
-  assert.equal(s.aqi, null);
-  assert.equal(s.heatIndexSignal, null);
-  assert.equal(s.dewPointSignal, null);
-  assert.equal(s.aqiSignal, null);
-});
-
-test("deriveSignals returns all-null values for null input", () => {
-  const calc = loadCalc();
-  const s = calc.deriveSignals(null);
-
-  assert.equal(s.temperature, null);
-  assert.equal(s.relativeHumidity, null);
-  assert.equal(s.dewPoint, null);
-  assert.equal(s.heatIndex, null);
-  assert.equal(s.aqi, null);
-  assert.equal(s.heatIndexSignal, null);
-  assert.equal(s.dewPointSignal, null);
-  assert.equal(s.aqiSignal, null);
+    assert.equal(s.temperature, null);
+    assert.equal(s.relativeHumidity, null);
+    assert.equal(s.dewPoint, null);
+    assert.equal(s.heatIndex, null);
+    assert.equal(s.aqi, null);
+    assert.equal(s.heatIndexSignal, null);
+    assert.equal(s.dewPointSignal, null);
+    assert.equal(s.aqiSignal, null);
+  }
 });

@@ -5,11 +5,11 @@ change.
 
 ## Current Phase
 
-- Build in progress — Unit 08 (UI Polish & Responsive) complete.
+- Build in progress — Unit 09 (Testing & Hardening) complete.
 
 ## Current Goal
 
-- Implement `context/spec/00-build-plan.md` in order; Unit 09 next.
+- Implement `context/spec/00-build-plan.md` in order; Unit 10 next.
 
 ## Completed
 
@@ -134,6 +134,28 @@ change.
   gained i18n-aware fakes (`createElement`/`append`, full static id list).
   Verified: 120/120 tests green (`node --test`, 9 files). Spec:
   `context/spec/08-ui-polish.md`.
+- Unit 09 — Testing & Hardening: closed the last automated-coverage gap and
+  de-duplicated the suite. New `tests/storage.test.mjs` (7 tests) — the
+  persistence layer previously had zero tests — pins the round-trip and the
+  malformed/unavailable-storage contract: bad JSON and wrong shapes
+  (non-object, missing/blank name, non-finite coords) load as `null`, and
+  `saveLocation`/`clearLocation` swallow `localStorage` errors. Suite
+  pruning: `tests/api.test.mjs` dropped the redundant
+  "fetchCurrentConditions calls both endpoints" test (the "combines" test
+  already proves both calls), `tests/conditions.test.mjs` dropped the
+  fetch-failure test duplicated in `tests/refresh-errors.test.mjs`, and
+  `tests/calc.test.mjs` merged the two all-null `deriveSignals` tests and
+  dropped the hot/humid `dewPointFallback` reference already pinned by the
+  `deriveSignals` fallback test (26.17 @ 30°C/80%). Verified: 123/123 tests
+  green (`node --test`, 10 files); every band boundary asserted (AQI
+  50/51/150/151, heat index 26.9/27/38.9/39, dew point 12.9/13/21/21.1).
+  Browser hardening pass (http.server + scripted browser): zero console
+  errors; live Riga load rendered the correct CAUTION banner; blocked
+  Open-Meteo requests → error state with a Retry that recovered after
+  unblocking; malformed `walk.location` → setup state; a stripped API
+  response (no `dew_point_2m`, no `us_aqi`) degraded to the Magnus fallback
+  dew point (26.2°C), an em-dash AQI, and a correct NO-GO decision. Spec:
+  `context/spec/09-testing-hardening.md`.
 
 ## In Progress
 
@@ -141,7 +163,7 @@ change.
 
 ## Next Up
 
-- Unit 09 — Testing & Hardening.
+- Unit 10 — Deploy & Docs.
 
 ## Open Questions
 
@@ -288,4 +310,19 @@ change.
   query; `tests/ui-polish.test.mjs` enforces token-only colors, the motion
   rules, clamp type, focus rings, and the HTML a11y wiring statically.
   120/120 tests green across 9 files.
+- Unit 09 complete: hardening pass + suite de-duplication. New
+  `tests/storage.test.mjs` (7 tests, vm + fake `localStorage` over a Map)
+  pins the persistence contract: round-trip, malformed JSON → null,
+  wrong shape → null (string name + finite numeric coords required),
+  throwing `localStorage` never throws from save/load/clear. Pruned 4
+  redundant tests: api "calls both endpoints" (the "combines" test proves
+  both calls), conditions' fetch-failure test (refresh-errors owns the same
+  assertion), calc's two all-null `deriveSignals` tests merged into one, and
+  calc's hot/humid `dewPointFallback` reference dropped (the `deriveSignals`
+  fallback test already pins 26.17 @ 30°C/80%). 123/123 green across 10
+  files. Browser hardening pass on `python -m http.server`: zero console
+  errors; live CAUTION banner; request-aborted "offline" → `#error-state`
+  with Retry recovering after unblocking; malformed `walk.location` → setup
+  state; API response stripped of `dew_point_2m`/`us_aqi` → Magnus fallback
+  dew point 26.2°C, em-dash AQI, correct NO-GO decision.
 

@@ -262,22 +262,6 @@ test("loadConditions computes NO-GO from a dangerous dew point", async () => {
   assert.equal(render.calls[0].signals.dewPointSignal, "NO-GO");
 });
 
-test("loadConditions shows the error state (no render) when the fetch fails", async () => {
-  const { app, render, elements } = loadApp({
-    onConditions: () => {
-      throw new Error("boom");
-    },
-  });
-
-  await app.loadConditions({ name: "Riga", latitude: 1, longitude: 2 });
-
-  assert.equal(render.calls.length, 0);
-  assert.equal(elements["error-state"].hidden, false);
-  assert.equal(elements["loading-state"].hidden, true);
-  assert.equal(elements["card-content"].hidden, true);
-  assert.equal(elements["refresh-btn"].disabled, false);
-});
-
 /* ------------------------------------------------------------------ */
 /* init (initial state + read path)                                   */
 /* ------------------------------------------------------------------ */
