@@ -22,8 +22,9 @@
           autocomplete="off"
           required
         />
-        <button type="submit" class="btn">Set city</button>
+        <button type="submit" class="btn" id="setup-submit">Set city</button>
       </form>
+      <p id="setup-error" class="setup-error" hidden></p>
     </section>
 
     <!-- Card state: a saved city exists -->
@@ -53,7 +54,10 @@
 
       <footer class="controls">
         <span class="city-label" id="city-label">&mdash;</span>
-        <button type="button" class="btn" id="refresh-btn" disabled>Refresh</button>
+        <span class="controls__actions">
+          <button type="button" class="btn btn--ghost" id="change-city-btn">Change city</button>
+          <button type="button" class="btn" id="refresh-btn" disabled>Refresh</button>
+        </span>
       </footer>
     </section>
   </main>

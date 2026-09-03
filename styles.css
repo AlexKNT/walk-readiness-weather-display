@@ -98,6 +98,12 @@ body {
   padding: 8px 12px;
 }
 
+.setup-error {
+  color: var(--text);
+  font-size: 0.875rem;
+  margin-top: 12px;
+}
+
 /* Decision banner */
 .banner {
   font-family: ui-monospace, "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace;
@@ -170,6 +176,11 @@ body {
   font-size: 0.875rem;
 }
 
+.controls__actions {
+  display: flex;
+  gap: 8px;
+}
+
 /* Buttons */
 .btn {
   font: inherit;
@@ -180,6 +191,11 @@ body {
   border-radius: var(--radius-sm);
   padding: 8px 14px;
   cursor: pointer;
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--text-muted);
 }
 
 .btn:disabled {

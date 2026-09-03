@@ -5,11 +5,11 @@ change.
 
 ## Current Phase
 
-- Build in progress — Unit 03 (Domain Logic) complete.
+- Build in progress — Unit 04 (Location Flow) complete.
 
 ## Current Goal
 
-- Implement `context/spec/00-build-plan.md` in order; Unit 04 next.
+- Implement `context/spec/00-build-plan.md` in order; Unit 05 next.
 
 ## Completed
 
@@ -48,6 +48,16 @@ change.
   written first. Verified: 51/51 tests green (`node --test`), every band
   boundary asserted (AQI 50/51/150/151, heat index 26.9/27/39, dew point
   12.9/13/21/21.1). Spec: `context/spec/03-domain-logic.md`.
+- Unit 04 — Location Flow: `app.js` rewritten from the Unit 00 scaffold to
+  orchestrate the first-run city entry — read `storage.loadLocation()` →
+  toggle setup/card state; submit → `api.geocode` → `storage.saveLocation` →
+  show card; inline `#setup-error` for empty/not-found/api failures; "Change
+  city" clears storage and re-shows the setup form. `index.html` gained
+  `#setup-submit`, `#setup-error`, and `#change-city-btn`; `styles.css`
+  gained `.setup-error`, `.controls__actions`, `.btn--ghost`. TDD:
+  `tests/location.test.mjs` (11 tests, vm + fake `document`/`storage`/`api`/
+  `LocationNotFound`). Verified: 62/62 tests green (`node --test`). Spec:
+  `context/spec/04-location-flow.md`.
 
 ## In Progress
 
@@ -55,7 +65,7 @@ change.
 
 ## Next Up
 
-- Unit 04 — Location Flow.
+- Unit 05 — Current Conditions & Decision.
 
 ## Open Questions
 
@@ -119,3 +129,16 @@ change.
   into computed values + per-signal classification for the render layer
   (Unit 05). Cross-realm note for `deriveSignals`: assert fields individually,
   not `deepStrictEqual`. `index.html` now loads `calc.js` after `api.js`.
+- Unit 04 complete: `app.js` now owns the location flow end to end. The
+  submit handler geocodes via `api.geocode`, persists via
+  `storage.saveLocation`, and toggles states; failures map to inline errors
+  (`empty` / `not-found` / `api`) rendered with `textContent`. "Change city"
+  clears storage and returns to setup. `app.js` auto-runs `init()` and also
+  exposes an `app` object (`init`, `submitCity`, `handleSubmit`,
+  `handleChangeCity`, `showSetupState`, `showCardState`). Testing follows the
+  Unit 02/03 vm pattern but adds fakes for `document` (elements that record
+  listeners), `storage`, `api`, and a realm-local `LocationNotFound`; tests
+  trigger the captured `submit`/`click` listeners and assert element state.
+  Note: `app.js` (unlike `config`/`api`/`calc`/`storage`) touches the DOM on
+  load, so the vm test must always inject a fake `document` before the script
+  runs.

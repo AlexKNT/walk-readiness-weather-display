@@ -29,7 +29,7 @@ ordered so every unit builds only on things that already exist.
 | 05 | `05-current-conditions.md` | Fetch current, compute, render banner + metrics grid | 02, 03, 04 |
 | 06 | `06-sparkline.md` | 12-hour humidity SVG + lowest-humidity highlight | 02, 05 |
 | 07 | `07-refresh-errors.md` | Manual refresh; loading/error/setup states; never-blank | 05 |
-| 08 | `08-ui-polish.md` | Full dark-only e-ink tokens, responsive, focus states | 05, 06 |
+| 08 | `08-ui-polish.md` | Full dark-only e-ink-style, responsive, focus states | 05, 06 |
 | 09 | `09-testing-hardening.md` | Rules-engine tests, boundary values, offline fallbacks | 03, 06 |
 | 10 | `10-deploy-docs.md` | `netlify.toml`, README, invariants audit, success criteria | 09 |
 
