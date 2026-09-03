@@ -28,6 +28,7 @@ walk-readiness-weather-display/
 │   ├── calc.js       # Dew point, heat index, rules engine (single source of truth)
 │   ├── render.js     # Builds DOM + SVG from computed state
 │   ├── storage.js    # localStorage read/write for saved location
+│   ├── i18n.js       # Bilingual UI copy (EN originals + RU translations)
 │   └── config.js     # Threshold constants + endpoint URLs
 ├── netlify.toml      # Static deploy config (optional)
 ├── context/          # Project docs (this folder)
@@ -46,6 +47,10 @@ the build plan; the responsibility split below is what matters.
   and SVG. It re-implements no thresholds.
 - `storage.js` owns **what is persisted**: the saved location in
   `localStorage`. Nothing else.
+- `i18n.js` owns **what the user reads**: every user-facing string as an
+  English original + Russian translation, plus the bilingual composition
+  helpers (`setText`, `setPlaceholder`, `aria`, `apply`). `render.js` and
+  `app.js` ask it for copy instead of hardcoding strings.
 - `app.js` owns **orchestration only**: read location → fetch → compute →
   render → wire refresh and settings events.
 
@@ -147,3 +152,6 @@ browser.
 8. **The page never blanks.** Missing location, failed fetch, or bad data
    must render a clear setup/error state with a path forward (set a city,
    retry), never a broken screen.
+9. **All user-facing copy lives in `i18n.js`.** English originals and
+   Russian translations are held there as keyed pairs; `render.js` and
+   `app.js` never hardcode a visible string.

@@ -5,11 +5,11 @@ change.
 
 ## Current Phase
 
-- Build in progress — Unit 07 (Refresh & Error States) complete.
+- Build in progress — Unit 08 (UI Polish & Responsive) complete.
 
 ## Current Goal
 
-- Implement `context/spec/00-build-plan.md` in order; Unit 08 next.
+- Implement `context/spec/00-build-plan.md` in order; Unit 09 next.
 
 ## Completed
 
@@ -110,6 +110,30 @@ change.
   tests green; browser smoke test confirmed Refresh re-fetches without a
   reload, a simulated failure shows the error state, and Retry recovers —
   zero page errors. Spec: `context/spec/07-refresh-errors.md`.
+- Unit 08 — UI Polish, Responsive, Accessibility & Bilingual UI: new
+  `i18n.js` (keyed `{ en, ru }` strings + `ELEMENTS` map + `i18n` object:
+  `entry`/`aria`/`setText`/`setPlaceholder`/`apply`) is the single source of
+  truth for user-facing copy; `render.decision()` and the sparkline
+  `aria-label` now flow through it, and `app.js`'s setup errors/submitting
+  label are i18n keys (`init()` runs `i18n.apply()`). Every visible string
+  shows its English original with a muted `lang="ru"` translation beside it
+  (`·` separator; banner translation on its own smaller line). Each metric
+  tile gained a `.metric__note` explanation revealed on hover and keyboard
+  focus (`:hover`/`:focus`/`:focus-within`), with `tabindex="0"` +
+  `aria-describedby` for screen readers. Accessibility pass: `role="alert"`
+  on `#setup-error`/`#error-message`, `role="status"` on the loading
+  message, `aria-live="polite"` banner, `aria-describedby` on the city
+  input, `:focus-visible` rings on buttons/input/metric tiles,
+  `theme-color` meta, and the NO-GO opacity pulse gated behind
+  `@media (prefers-reduced-motion: no-preference)` (the only animation).
+  Fluid clamp typography/padding, `tabular-nums`, wrapping controls, and a
+  sparkline caption; every color still comes from `:root` tokens. TDD:
+  `tests/i18n.test.mjs` (9) + `tests/ui-polish.test.mjs` (9 static CSS/HTML
+  checks) written first; `render.test.mjs` bilingual banner assertions,
+  `sparkline.test.mjs` bilingual aria-label, and the three app.js suites
+  gained i18n-aware fakes (`createElement`/`append`, full static id list).
+  Verified: 120/120 tests green (`node --test`, 9 files). Spec:
+  `context/spec/08-ui-polish.md`.
 
 ## In Progress
 
@@ -117,7 +141,7 @@ change.
 
 ## Next Up
 
-- Unit 08 — UI Polish & Responsive.
+- Unit 09 — Testing & Hardening.
 
 ## Open Questions
 
@@ -247,4 +271,21 @@ change.
   increments), and `refreshConditions` falling back to setup with no saved
   location. Browser smoke: refresh survives a window marker (no reload),
   simulated failure shows `#error-state`, Retry recovers — zero `pageerror`.
+- Unit 08 complete: added the bilingual English/Russian UI and the polish
+  layer. `i18n.js` holds the `STRINGS` table and an `ELEMENTS` list of
+  static targets; `i18n.setText` composes `<span class="i18n-en">` +
+  `<span class="i18n-ru" lang="ru">` via `document.createElement`/`append`
+  (never innerHTML), and CSS adds the `·` separator + muted translation
+  (`.banner .i18n-ru` drops to a smaller second line). `render.decision`
+  maps GO/CAUTION/NO-GO to i18n keys; the sparkline `aria-label` is
+  bilingual via `i18n.aria`. `app.js` maps setup errors to i18n keys and
+  `init()` runs `i18n.apply()` — so every fake `document` in the app.js
+  suites now needs the full static-id list plus `createElement`/`append`
+  (textContent as a getter/setter that clears recorded children). Metric
+  explanations are `.metric__note` spans revealed on `:hover`/`:focus`/
+  `:focus-within`, linked by `tabindex="0"` + `aria-describedby`. The NO-GO
+  pulse is the only animation and lives inside the reduced-motion media
+  query; `tests/ui-polish.test.mjs` enforces token-only colors, the motion
+  rules, clamp type, focus rings, and the HTML a11y wiring statically.
+  120/120 tests green across 9 files.
 

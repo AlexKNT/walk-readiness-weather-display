@@ -14,23 +14,27 @@
  * four.
  */
 
-const SETUP_ERRORS = {
-  empty: "Please enter a city.",
-  "not-found": "We couldn't find that city. Check the spelling and try again.",
-  api: "Something went wrong. Please try again.",
+const SETUP_ERROR_KEYS = {
+  empty: "error-empty-city",
+  "not-found": "error-city-not-found",
+  api: "error-api",
 };
 
 function getElement(id) {
   return document.getElementById(id);
 }
 
-function showSetupState(message) {
+/**
+ * Show the setup state. `messageKey` is an i18n key for the inline error;
+ * omit it to hide the error.
+ */
+function showSetupState(messageKey) {
   getElement("setup-state").hidden = false;
   getElement("card-state").hidden = true;
 
   const errorEl = getElement("setup-error");
-  if (message) {
-    errorEl.textContent = message;
+  if (messageKey) {
+    i18n.setText(errorEl, SETUP_ERROR_KEYS[messageKey] ?? "error-api");
     errorEl.hidden = false;
   } else {
     errorEl.textContent = "";
@@ -71,7 +75,7 @@ function showContentState() {
 function setSubmitting(submitting) {
   const submitBtn = getElement("setup-submit");
   submitBtn.disabled = submitting;
-  submitBtn.textContent = submitting ? "Finding city…" : "Set city";
+  i18n.setText(submitBtn, submitting ? "finding-city" : "setup-submit-label");
 }
 
 function setRefreshing(refreshing) {
@@ -113,7 +117,7 @@ async function handleSubmit(event) {
 
   const city = getElement("city-input").value;
   if (String(city ?? "").trim() === "") {
-    showSetupState(SETUP_ERRORS.empty);
+    showSetupState("empty");
     return;
   }
 
@@ -126,7 +130,7 @@ async function handleSubmit(event) {
     showCardState(result.location);
     loadConditions(result.location);
   } else {
-    showSetupState(SETUP_ERRORS[result.error] ?? SETUP_ERRORS.api);
+    showSetupState(result.error);
   }
 }
 
@@ -182,6 +186,8 @@ function refreshConditions() {
 }
 
 function init() {
+  i18n.apply();
+
   getElement("setup-form").addEventListener("submit", handleSubmit);
   getElement("change-city-btn").addEventListener("click", handleChangeCity);
   getElement("refresh-btn").addEventListener("click", refreshConditions);

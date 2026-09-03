@@ -11,6 +11,10 @@
         "/^node --test tests/api\\.test\\.mjs tests/calc\\.test\\.mjs tests/location\\.test\\.mjs$/": {
             "approve": true,
             "matchCommandLine": true
+        },
+        "/^node --test tests/api\\.test\\.mjs tests/calc\\.test\\.mjs tests/conditions\\.test\\.mjs tests/location\\.test\\.mjs tests/refresh-errors\\.test\\.mjs tests/render\\.test\\.mjs tests/sparkline\\.test\\.mjs tests/i18n\\.test\\.mjs tests/ui-polish\\.test\\.mjs 2>&1 \\| Select-String -Pattern \"fail\"$/": {
+            "approve": true,
+            "matchCommandLine": true
         }
     }
 }

@@ -17,6 +17,7 @@ import { dirname, join } from "node:path";
 
 const projectRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 const renderSource = readFileSync(join(projectRoot, "render.js"), "utf8");
+const i18nSource = readFileSync(join(projectRoot, "i18n.js"), "utf8");
 
 const ELEMENT_IDS = [
   "decision-banner",
@@ -29,9 +30,10 @@ const ELEMENT_IDS = [
 /** A fake element exposing the text/class surface render.js touches. */
 function makeElement(id) {
   const classes = new Set();
-  return {
+  const el = {
     id,
-    textContent: "",
+    children: [],
+    _text: "",
     classList: {
       add(cls) {
         classes.add(cls);
@@ -46,7 +48,20 @@ function makeElement(id) {
     hasClass(cls) {
       return classes.has(cls);
     },
+    append(...nodes) {
+      this.children.push(...nodes);
+    },
   };
+  Object.defineProperty(el, "textContent", {
+    get() {
+      return this._text;
+    },
+    set(value) {
+      this._text = String(value);
+      this.children = [];
+    },
+  });
+  return el;
 }
 
 /** A fake document over exactly the ids render.js looks up. */
@@ -62,15 +77,21 @@ function makeDocument() {
       }
       return elements[id];
     },
+    createElement(tagName) {
+      return makeElement(tagName);
+    },
   };
 }
 
-/** Load render.js in a fresh vm realm with a fake document. */
+/** Load i18n.js + render.js in a fresh vm realm with a fake document. */
 function loadRender() {
   const document = makeDocument();
   const sandbox = { document };
   vm.createContext(sandbox);
-  vm.runInContext(`${renderSource}\n;this.__exports = { render };`, sandbox);
+  vm.runInContext(
+    `${i18nSource}\n${renderSource}\n;this.__exports = { render };`,
+    sandbox,
+  );
   return { render: sandbox.__exports.render, elements: document.elements };
 }
 
@@ -94,45 +115,58 @@ test("decision renders GO text and class", () => {
   const { render, elements } = loadRender();
   render.decision("GO");
 
-  assert.equal(elements["decision-banner"].textContent, "WALK RECOMMENDED");
-  assert.ok(elements["decision-banner"].hasClass("banner--go"));
-  assert.ok(!elements["decision-banner"].hasClass("banner--caution"));
-  assert.ok(!elements["decision-banner"].hasClass("banner--no-go"));
+  const banner = elements["decision-banner"];
+  assert.equal(banner.children.length, 2);
+  assert.equal(banner.children[0].textContent, "WALK RECOMMENDED");
+  assert.equal(banner.children[1].textContent, "ГУЛЯТЬ МОЖНО");
+  assert.equal(banner.children[1].lang, "ru");
+  assert.ok(banner.hasClass("banner--go"));
+  assert.ok(!banner.hasClass("banner--caution"));
+  assert.ok(!banner.hasClass("banner--no-go"));
 });
 
 test("decision renders CAUTION text and class", () => {
   const { render, elements } = loadRender();
   render.decision("CAUTION");
 
-  assert.equal(elements["decision-banner"].textContent, "HIGH HUMIDITY: STAY SHADED");
-  assert.ok(elements["decision-banner"].hasClass("banner--caution"));
+  const banner = elements["decision-banner"];
+  assert.equal(banner.children[0].textContent, "HIGH HUMIDITY: STAY SHADED");
+  assert.equal(banner.children[1].textContent, "ВЫСОКАЯ ВЛАЖНОСТЬ: БУДЬТЕ В ТЕНИ");
+  assert.ok(banner.hasClass("banner--caution"));
 });
 
 test("decision renders NO-GO text and class", () => {
   const { render, elements } = loadRender();
   render.decision("NO-GO");
 
-  assert.equal(elements["decision-banner"].textContent, "STAY INSIDE: CARDIAC STRESS RISK");
-  assert.ok(elements["decision-banner"].hasClass("banner--no-go"));
+  const banner = elements["decision-banner"];
+  assert.equal(banner.children[0].textContent, "STAY INSIDE: CARDIAC STRESS RISK");
+  assert.equal(banner.children[1].textContent, "ОСТАВАЙТЕСЬ ДОМА: РИСК ДЛЯ СЕРДЦА");
+  assert.ok(banner.hasClass("banner--no-go"));
 });
 
-test("decision renders a neutral NO DATA banner for null", () => {
+test("decision renders a neutral bilingual NO DATA banner for null", () => {
   const { render, elements } = loadRender();
   render.decision(null);
 
-  assert.equal(elements["decision-banner"].textContent, "NO DATA");
-  assert.ok(!elements["decision-banner"].hasClass("banner--go"));
-  assert.ok(!elements["decision-banner"].hasClass("banner--caution"));
-  assert.ok(!elements["decision-banner"].hasClass("banner--no-go"));
+  const banner = elements["decision-banner"];
+  assert.equal(banner.children[0].textContent, "NO DATA");
+  assert.equal(banner.children[1].textContent, "НЕТ ДАННЫХ");
+  assert.ok(!banner.hasClass("banner--go"));
+  assert.ok(!banner.hasClass("banner--caution"));
+  assert.ok(!banner.hasClass("banner--no-go"));
 });
 
-test("decision clears the previous status class on update", () => {
+test("decision clears the previous status class and text on update", () => {
   const { render, elements } = loadRender();
   render.decision("GO");
   render.decision("NO-GO");
 
-  assert.ok(elements["decision-banner"].hasClass("banner--no-go"));
-  assert.ok(!elements["decision-banner"].hasClass("banner--go"));
+  const banner = elements["decision-banner"];
+  assert.ok(banner.hasClass("banner--no-go"));
+  assert.ok(!banner.hasClass("banner--go"));
+  assert.equal(banner.children.length, 2);
+  assert.equal(banner.children[0].textContent, "STAY INSIDE: CARDIAC STRESS RISK");
 });
 
 /* ------------------------------------------------------------------ */

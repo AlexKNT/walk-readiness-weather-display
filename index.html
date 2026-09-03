@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0D0F0D" />
   <title>Walk Readiness</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -10,21 +11,22 @@
   <main class="card">
     <!-- Setup state: no city saved -->
     <section id="setup-state" hidden>
-      <h1 class="setup-title">Walk Readiness</h1>
-      <p class="setup-hint">Enter your city to see if it&rsquo;s safe to walk right now.</p>
+      <h1 class="setup-title" id="app-title">Walk Readiness</h1>
+      <p class="setup-hint" id="setup-hint">Enter your city to see if it&rsquo;s safe to walk right now.</p>
       <form id="setup-form">
-        <label class="visually-hidden" for="city-input">City</label>
+        <label class="visually-hidden" id="city-input-label" for="city-input">City</label>
         <input
           id="city-input"
           name="city"
           type="text"
           placeholder="City, e.g. Riga"
           autocomplete="off"
+          aria-describedby="setup-error"
           required
         />
         <button type="submit" class="btn" id="setup-submit">Set city</button>
       </form>
-      <p id="setup-error" class="setup-error" hidden></p>
+      <p id="setup-error" class="setup-error" role="alert" hidden></p>
     </section>
 
     <!-- Card state: a saved city exists -->
@@ -33,33 +35,40 @@
         <div id="decision-banner" class="banner" aria-live="polite"></div>
 
         <div class="metrics">
-          <div class="metric">
-            <span class="metric__label">Dew Point</span>
+          <div class="metric" tabindex="0" aria-describedby="metric-dew-note">
+            <span class="metric__label" id="metric-dew-label">Dew Point</span>
             <span class="metric__value" id="metric-dew">&mdash;</span>
+            <span class="metric__note" id="metric-dew-note">How muggy the air feels. Below 13&deg;C is comfortable, above 21&deg;C is dangerous.</span>
           </div>
-          <div class="metric">
-            <span class="metric__label">Heat Index</span>
+          <div class="metric" tabindex="0" aria-describedby="metric-heat-note">
+            <span class="metric__label" id="metric-heat-label">Heat Index</span>
             <span class="metric__value" id="metric-heat">&mdash;</span>
+            <span class="metric__note" id="metric-heat-note">How hot it feels on your body. Below 27&deg;C is safe.</span>
           </div>
-          <div class="metric">
-            <span class="metric__label">AQI</span>
+          <div class="metric" tabindex="0" aria-describedby="metric-aqi-note">
+            <span class="metric__label" id="metric-aqi-label">AQI</span>
             <span class="metric__value" id="metric-aqi">&mdash;</span>
+            <span class="metric__note" id="metric-aqi-note">Air quality. 50 or below is clean, 151 or above is hazardous.</span>
           </div>
-          <div class="metric">
-            <span class="metric__label">Temp</span>
+          <div class="metric" tabindex="0" aria-describedby="metric-temp-note">
+            <span class="metric__label" id="metric-temp-label">Temp</span>
             <span class="metric__value" id="metric-temp">&mdash;</span>
+            <span class="metric__note" id="metric-temp-note">The current air temperature.</span>
           </div>
         </div>
 
-        <div class="sparkline" id="sparkline"></div>
+        <section class="sparkline">
+          <p class="sparkline__caption" id="sparkline-caption">Humidity, next 12 hours</p>
+          <div id="sparkline"></div>
+        </section>
       </div>
 
       <div id="loading-state" hidden>
-        <p class="status-message" role="status">Loading&hellip;</p>
+        <p class="status-message" id="loading-message" role="status">Loading&hellip;</p>
       </div>
 
       <div id="error-state" hidden>
-        <p class="status-message">Couldn&rsquo;t load the weather. Check your connection and try again.</p>
+        <p class="status-message" id="error-message" role="alert">Couldn&rsquo;t load the weather. Check your connection and try again.</p>
         <button type="button" class="btn" id="retry-btn">Retry</button>
       </div>
 
@@ -77,6 +86,7 @@
   <script src="storage.js"></script>
   <script src="api.js"></script>
   <script src="calc.js"></script>
+  <script src="i18n.js"></script>
   <script src="render.js"></script>
   <script src="app.js"></script>
 </body>

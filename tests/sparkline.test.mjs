@@ -18,6 +18,7 @@ import { dirname, join } from "node:path";
 const projectRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 const configSource = readFileSync(join(projectRoot, "config.js"), "utf8");
 const renderSource = readFileSync(join(projectRoot, "render.js"), "utf8");
+const i18nSource = readFileSync(join(projectRoot, "i18n.js"), "utf8");
 
 /** Load config.js + render.js in a fresh vm realm with a fake #sparkline. */
 function loadRender() {
@@ -34,7 +35,7 @@ function loadRender() {
   const sandbox = { document };
   vm.createContext(sandbox);
   vm.runInContext(
-    `${configSource}\n${renderSource}\n` +
+    `${configSource}\n${i18nSource}\n${renderSource}\n` +
       `;this.__exports = { render, SPARKLINE_WIDTH, SPARKLINE_HEIGHT, SPARKLINE_PAD_X, SPARKLINE_PAD_Y };`,
     sandbox,
   );
@@ -99,6 +100,12 @@ test("sparkline renders an SVG with one point per hour and a polyline", () => {
   assert.equal(countOccurrences(sparkline.innerHTML, "<circle"), 12);
   assert.ok(sparkline.innerHTML.includes('<polyline class="sparkline__line"'));
   assert.ok(sparkline.innerHTML.includes('<rect class="sparkline__band"'));
+  assert.ok(
+    sparkline.innerHTML.includes(
+      'aria-label="12-hour humidity sparkline. График влажности на 12 часов"',
+    ),
+    "the sparkline should carry a bilingual aria-label",
+  );
 });
 
 test("sparkline highlights the lowest-humidity hour slot", () => {

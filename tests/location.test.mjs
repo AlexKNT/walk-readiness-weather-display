@@ -17,6 +17,7 @@ import { dirname, join } from "node:path";
 
 const projectRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 const appSource = readFileSync(join(projectRoot, "app.js"), "utf8");
+const i18nSource = readFileSync(join(projectRoot, "i18n.js"), "utf8");
 
 const ELEMENT_IDS = [
   "setup-state",
@@ -32,6 +33,21 @@ const ELEMENT_IDS = [
   "card-content",
   "refresh-btn",
   "retry-btn",
+  /* Static i18n targets touched by init() -> i18n.apply(). */
+  "app-title",
+  "setup-hint",
+  "city-input-label",
+  "metric-dew-label",
+  "metric-heat-label",
+  "metric-aqi-label",
+  "metric-temp-label",
+  "metric-dew-note",
+  "metric-heat-note",
+  "metric-aqi-note",
+  "metric-temp-note",
+  "sparkline-caption",
+  "loading-message",
+  "error-message",
 ];
 
 /** The same LocationNotFound class is injected into the vm, so the
@@ -46,17 +62,36 @@ class LocationNotFound extends Error {
 
 /** A fake element exposing the few properties app.js reads/writes. */
 function makeElement(id) {
-  return {
+  const el = {
     id,
     hidden: true,
-    textContent: "",
     value: "",
     disabled: false,
     listeners: {},
-    addEventListener(type, handler) {
-      this.listeners[type] = handler;
-    },
+    children: [],
+    _text: "",
   };
+  Object.defineProperty(el, "textContent", {
+    get() {
+      return this._text;
+    },
+    set(value) {
+      this._text = String(value);
+      this.children = [];
+    },
+  });
+  el.append = function (...nodes) {
+    this.children.push(...nodes);
+  };
+  el.addEventListener = function (type, handler) {
+    this.listeners[type] = handler;
+  };
+  return el;
+}
+
+/** The text of an element's bilingual child spans, joined for assertion. */
+function text(el) {
+  return el.children.map((child) => child.textContent).join(" ");
 }
 
 /** A fake document over exactly the ids app.js looks up. */
@@ -71,6 +106,9 @@ function makeDocument() {
         throw new Error(`app.js looked up unknown element #${id}`);
       }
       return elements[id];
+    },
+    createElement(tagName) {
+      return makeElement(tagName);
     },
   };
 }
@@ -153,7 +191,10 @@ function loadApp({ storage, api, location } = {}) {
   };
 
   vm.createContext(sandbox);
-  vm.runInContext(`${appSource}\n;this.__exports = { app };`, sandbox);
+  vm.runInContext(
+    `${i18nSource}\n${appSource}\n;this.__exports = { app };`,
+    sandbox,
+  );
 
   return {
     app: sandbox.__exports.app,
@@ -285,7 +326,8 @@ test("submit shows an inline error for an un-geocodable city", async () => {
   assert.equal(elements["setup-state"].hidden, false);
   assert.equal(elements["card-state"].hidden, true);
   assert.equal(elements["setup-error"].hidden, false);
-  assert.match(elements["setup-error"].textContent, /couldn't find/i);
+  assert.match(text(elements["setup-error"]), /couldn't find/i);
+  assert.match(text(elements["setup-error"]), /не найден/i);
 });
 
 test("submit shows a generic inline error on any other failure", async () => {
@@ -302,7 +344,8 @@ test("submit shows a generic inline error on any other failure", async () => {
   assert.equal(elements["setup-state"].hidden, false);
   assert.equal(elements["card-state"].hidden, true);
   assert.equal(elements["setup-error"].hidden, false);
-  assert.match(elements["setup-error"].textContent, /something went wrong/i);
+  assert.match(text(elements["setup-error"]), /something went wrong/i);
+  assert.match(text(elements["setup-error"]), /что-то пошло не так/i);
 });
 
 test("submit shows an inline error for an empty city without calling the api", async () => {
@@ -316,7 +359,8 @@ test("submit shows an inline error for an empty city without calling the api", a
   assert.equal(elements["setup-state"].hidden, false);
   assert.equal(elements["card-state"].hidden, true);
   assert.equal(elements["setup-error"].hidden, false);
-  assert.match(elements["setup-error"].textContent, /enter a city/i);
+  assert.match(text(elements["setup-error"]), /enter a city/i);
+  assert.match(text(elements["setup-error"]), /введите город/i);
 });
 
 /* ------------------------------------------------------------------ */

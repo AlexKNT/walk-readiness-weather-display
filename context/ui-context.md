@@ -58,7 +58,7 @@ font-family: ui-monospace, "JetBrains Mono", "Cascadia Code", Menlo, Consolas, m
 
 | role | size / weight | notes |
 |---|---|---|
-| decision banner text | clamp(2.5rem, 8vw, 4rem) / 800, monospace | the single most important line |
+| decision banner text | clamp(1.75rem, 7vw, 2.75rem) / 800, monospace | the single most important line |
 | metric value | clamp(1.5rem, 5vw, 2.25rem) / 700, monospace | tabular numerals |
 | metric label | 0.75rem / 500, uppercase, +0.08em letter-spacing | muted |
 | city / meta | 0.875rem / 400 | muted |
@@ -87,6 +87,36 @@ font-family: ui-monospace, "JetBrains Mono", "Cascadia Code", Menlo, Consolas, m
 - **Focus states.** Every button and input gets a visible `--focus-ring`
   outline for keyboard accessibility.
 
+## Bilingual UI (English + Russian)
+
+Every user-facing string renders as its English original with the Russian
+translation right beside it, separated by a middle dot and rendered muted
+(`--text-muted`), so the English stays the glance path and the translation
+reads as secondary. The translations carry `lang="ru"` so screen readers
+switch pronunciation. On the decision banner the Russian line drops to its
+own smaller muted line under the status-colored English. All copy lives in
+`i18n.js` as keyed `{ en, ru }` pairs; no visible string is hardcoded in
+`render.js` or `app.js`.
+
+## Metric Explanations
+
+Each metric tile carries a `.metric__note` — a short one-sentence summary of
+what the metric means and its safe band. It is hidden by default and revealed
+instantly (no transition) when the tile is hovered or keyboard-focused
+(`.metric:hover` / `.metric:focus` / `.metric:focus-within`). The tiles are
+keyboard-reachable (`tabindex="0"`) and point at their note with
+`aria-describedby`, so the explanation is available to screen readers on
+focus.
+
+## Accessibility
+
+- `#setup-error` and `#error-message` are `role="alert"`; the loading message
+  is `role="status"`; the decision banner is `aria-live="polite"`.
+- The city input is `aria-describedby`-linked to the setup error and has a
+  visually-hidden label.
+- Buttons, the input, and the metric tiles all get a visible `--focus-ring`
+  outline on `:focus-visible`.
+
 ## Status Banner
 
 - **GO** — "WALK RECOMMENDED" in `--green`.
@@ -105,8 +135,8 @@ stop) may sit beside the banner text; it inherits the banner's status color.
 ## Motion
 
 No animation in v1. The only permitted motion is a slow opacity pulse on the
-NO-GO banner, gated behind `prefers-reduced-motion: no-preference`. Nothing
-else moves, flashes, or transitions.
+NO-GO banner, gated behind `prefers-reduced-motion: no-preference` (the
+keyframe is `no-go-pulse`). Nothing else moves, flashes, or transitions.
 
 No other elements animate. Motion is reserved for the single most urgent
 signal, so it never competes for attention.

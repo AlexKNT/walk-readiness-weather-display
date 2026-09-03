@@ -11,9 +11,9 @@
  */
 
 const DECISION_TEXT = {
-  GO: "WALK RECOMMENDED",
-  CAUTION: "HIGH HUMIDITY: STAY SHADED",
-  "NO-GO": "STAY INSIDE: CARDIAC STRESS RISK",
+  GO: "banner-go",
+  CAUTION: "banner-caution",
+  "NO-GO": "banner-no-go",
 };
 
 const BANNER_CLASS = {
@@ -150,7 +150,9 @@ function lowestHumidityIndex(humidity) {
 
 const render = {
   /**
-   * Render the decision banner: text + status class for GO/CAUTION/NO-GO.
+   * Render the decision banner: bilingual text (English + Russian) plus the
+   * status class for GO/CAUTION/NO-GO. The copy itself lives in `i18n.js`;
+   * this function only maps the decision to its presentation.
    *
    * @param {"GO" | "CAUTION" | "NO-GO" | null} status
    */
@@ -159,9 +161,9 @@ const render = {
     const known =
       status !== null &&
       status !== undefined &&
-      BANNER_CLASS[status] !== undefined;
+      DECISION_TEXT[status] !== undefined;
     setStatusClass(banner, BANNER_CLASSES, known ? BANNER_CLASS[status] : null);
-    banner.textContent = known ? DECISION_TEXT[status] : "NO DATA";
+    i18n.setText(banner, known ? DECISION_TEXT[status] : "banner-no-data");
   },
 
   /**
@@ -267,7 +269,7 @@ const render = {
 
     el.innerHTML =
       `<svg class="sparkline__svg" viewBox="0 0 ${SPARKLINE_WIDTH} ${SPARKLINE_HEIGHT}"` +
-      ` role="img" aria-label="12-hour humidity sparkline" focusable="false"` +
+      ` role="img" aria-label="${i18n.aria("sparkline-label")}" focusable="false"` +
       ` xmlns="http://www.w3.org/2000/svg">` +
       `<rect class="sparkline__band" x="${bandLeft.toFixed(2)}" y="${SPARKLINE_PAD_Y}"` +
       ` width="${bandWidth.toFixed(2)}" height="${plotHeight.toFixed(2)}" rx="4"/>` +

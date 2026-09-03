@@ -28,6 +28,22 @@ The app runs entirely in the browser as a static site: plain HTML, CSS, and Java
 - Always-dark, high-contrast, low-dopamine typography. No light mode.
 - Immediate decision banner: **"WALK RECOMMENDED"**, **"HIGH HUMIDITY: STAY SHADED"**, or **"STAY INSIDE: CARDIAC STRESS RISK"**.
 - Health-first metrics grid: prominent display of Dew Point, Heat Index, AQI, and temperature.
+- Keyboard- and screen-reader-friendly: focus rings, alert/status live
+  regions, focusable metric tiles, and the NO-GO pulse disabled for
+  reduced-motion users.
+
+### Bilingual UI (English + Russian)
+
+- Every user-facing string shows its English original with a muted Russian
+  translation beside it, so the app is readable in both languages at once.
+- All copy lives in `i18n.js` as keyed `{ en, ru }` pairs; the decision
+  banner, error messages, and button labels are translated too.
+
+### Metric Explanations
+
+- Each metric tile explains itself on demand: hovering or keyboard-focusing
+  the tile reveals a short summary of what the metric means and its safe
+  band (linked via `aria-describedby` for screen readers).
 
 ### Visual Sparkline Trend
 

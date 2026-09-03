@@ -1,4 +1,6 @@
 :root {
+  color-scheme: dark;
+
   /* Neutrals */
   --bg:            #0D0F0D;  /* page background */
   --surface:       #161916;  /* card surface */
@@ -50,7 +52,7 @@ body {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  padding: 24px;
+  padding: clamp(12px, 4vw, 24px);
 }
 
 .mono {
@@ -64,7 +66,7 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 28px;
+  padding: clamp(18px, 5vw, 28px);
 }
 
 /* Setup state */
@@ -108,18 +110,33 @@ body {
 .banner {
   font-family: ui-monospace, "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace;
   font-weight: 800;
-  font-size: clamp(1.5rem, 6vw, 2.5rem);
+  font-size: clamp(1.75rem, 7vw, 2.75rem);
   line-height: 1.1;
   text-align: center;
-  min-height: 5.5rem;
+  min-height: 5rem;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 6px;
   padding: 20px 12px;
   margin-bottom: 24px;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   color: var(--text);
+}
+
+/* The Russian line of the banner sits on its own smaller row. */
+.banner .i18n-ru {
+  display: block;
+  font-size: 0.42em;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+}
+
+.banner .i18n-ru::before {
+  content: "";
 }
 
 /* Banner status accents */
@@ -151,6 +168,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  cursor: default;
 }
 
 .metric__label {
@@ -164,8 +182,24 @@ body {
 .metric__value {
   font-family: ui-monospace, "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace;
   font-weight: 700;
-  font-size: clamp(1.5rem, 5vw, 2rem);
+  font-size: clamp(1.5rem, 5vw, 2.25rem);
+  font-variant-numeric: tabular-nums;
   color: var(--text);
+}
+
+/* Short explanation per metric, revealed on hover and keyboard focus. */
+.metric__note {
+  display: none;
+  margin-top: 2px;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.metric:hover .metric__note,
+.metric:focus .metric__note,
+.metric:focus-within .metric__note {
+  display: block;
 }
 
 /* Metric value status accents (the matching metric only) */
@@ -189,8 +223,22 @@ body {
   margin-bottom: 24px;
   padding: 12px;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   justify-content: center;
+  gap: 10px;
+}
+
+.sparkline__caption {
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+#sparkline {
+  width: 100%;
 }
 
 .sparkline__svg {
@@ -242,6 +290,7 @@ body {
   justify-content: space-between;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .city-label {
@@ -278,9 +327,39 @@ body {
 
 /* Focus */
 .btn:focus-visible,
-#city-input:focus-visible {
+#city-input:focus-visible,
+.metric:focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
+}
+
+/* Bilingual text: the Russian translation is muted and separated from the
+   English original with a middle dot. */
+.i18n-ru {
+  color: var(--text-muted);
+}
+
+.i18n-ru::before {
+  content: "\00A0\00B7\00A0";
+}
+
+/* Motion: a slow opacity pulse on the NO-GO banner is the only permitted
+   animation, and it is skipped entirely for reduced-motion users. */
+@media (prefers-reduced-motion: no-preference) {
+  .banner--no-go {
+    animation: no-go-pulse 2.2s ease-in-out infinite;
+  }
+}
+
+@keyframes no-go-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.55;
+  }
 }
 
 /* Screen-reader-only label */
