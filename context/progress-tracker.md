@@ -5,11 +5,11 @@ change.
 
 ## Current Phase
 
-- Build in progress — Unit 01 (Config & Storage) complete.
+- Build in progress — Unit 02 (API Client) complete.
 
 ## Current Goal
 
-- Implement `context/spec/00-build-plan.md` in order; Unit 02 next.
+- Implement `context/spec/00-build-plan.md` in order; Unit 03 next.
 
 ## Completed
 
@@ -32,6 +32,13 @@ change.
   save/load/clear for `walk.location`, malformed → null). `index.html` loads
   `config.js` + `storage.js` before `app.js`; `app.js` now reads the location
   via `storage.loadLocation()`. Spec: `context/spec/01-config-storage.md`.
+- Unit 02 — API Client: `api.js` (global `api` object with `geocode`,
+  `fetchForecast`, `fetchAirQuality`; `LocationNotFound` + `ApiError` typed
+  errors; payload validation) added at project root and loaded after
+  `config.js`. TDD: `tests/api.test.mjs` (20 tests, `node:test` + `vm` with a
+  mocked `fetch`) written first, then implementation. Verified: tests green,
+  live Open-Meteo calls succeed with no key in Node and in a browser with
+  zero console errors. Spec: `context/spec/02-api-client.md`.
 
 ## In Progress
 
@@ -39,7 +46,7 @@ change.
 
 ## Next Up
 
-- Unit 02 — API Client.
+- Unit 03 — Domain Logic.
 
 ## Open Questions
 
@@ -86,3 +93,13 @@ change.
   root and loaded before `app.js`. `app.js` now calls `storage.loadLocation()`
   so malformed saved values read as "no location" and the setup state shows.
   Verified round-trip and malformed-value handling in the browser console.
+- Unit 02 complete: `api.js` written TDD-first against `tests/api.test.mjs`
+  (Node's built-in runner). Production files stay plain ordered scripts
+  (Unit 00 decision), so tests load `config.js` + `api.js` together in a
+  `vm` context with a mocked `fetch` and expose the public bindings via a
+  trailing `this.__exports = { ... }` snippet. Two cross-realm pitfalls fixed
+  in tests (not in `api.js`): (1) `deepStrictEqual` fails on objects created
+  inside the vm realm (different `Object.prototype`) — assert fields instead;
+  (2) `instanceof Error` fails across realms — compare against the realm's
+  own `Error`. Live smoke: all three calls succeed against Open-Meteo with no
+  key, in Node and in the browser (zero console errors).
