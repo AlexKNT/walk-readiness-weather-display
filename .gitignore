@@ -1,0 +1,11 @@
+# Python leftovers from the planning phase
+.venv/
+__pycache__/
+
+# Editor / OS
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

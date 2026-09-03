@@ -5,11 +5,11 @@ change.
 
 ## Current Phase
 
-- Build in progress — Unit 09 (Testing & Hardening) complete.
+- Build complete — all 11 units implemented (Units 00–10).
 
 ## Current Goal
 
-- Implement `context/spec/00-build-plan.md` in order; Unit 10 next.
+- Project complete. Deploy to Netlify when ready (see root `README.md`).
 
 ## Completed
 
@@ -156,6 +156,14 @@ change.
   response (no `dew_point_2m`, no `us_aqi`) degraded to the Magnus fallback
   dew point (26.2°C), an em-dash AQI, and a correct NO-GO decision. Spec:
   `context/spec/09-testing-hardening.md`.
+- Unit 10 — Deploy & Docs: the portfolio finish. Root `README.md` (what it
+  does, stack, project layout, thresholds, run/test/deploy), `netlify.toml`
+  (`publish = "."`, no build step), and a filled `.gitignore` (`.venv/`,
+  `.vscode/`, `__pycache__/`) so a git-connected Netlify deploy stays clean.
+  Invariants audit confirmed all nine `architecture.md` invariants hold;
+  success-criteria check confirmed criteria 1–4 are true and criterion 5 is
+  a drop-in Netlify deploy. `architecture.md`'s layout tree updated to the
+  real root-level script layout. Spec: `context/spec/10-deploy-docs.md`.
 
 ## In Progress
 
@@ -163,12 +171,12 @@ change.
 
 ## Next Up
 
-- Unit 10 — Deploy & Docs.
+- None — all units complete.
 
 ## Open Questions
 
-- Netlify deploy mechanics (git-connected vs. drag-and-drop) — decide in the
-  deploy unit.
+- None — Netlify deploy mechanics documented in `README.md` (git-connected
+  and drag-and-drop both supported).
 
 ## Architecture Decisions
 
@@ -310,6 +318,14 @@ change.
   query; `tests/ui-polish.test.mjs` enforces token-only colors, the motion
   rules, clamp type, focus rings, and the HTML a11y wiring statically.
   120/120 tests green across 9 files.
+- Unit 10 complete: the project is finished as a recruiter-ready static
+  site. Added root `README.md`, `netlify.toml` (publish = "."), and filled
+  the previously-empty `.gitignore`. The invariants audit (all nine hold)
+  and the five success criteria are documented in the README; the only
+  manual step left is the actual Netlify deploy (git-import auto-reads
+  `netlify.toml`, or drag-and-drop). `architecture.md`'s file tree was
+  updated from the stale `js/`-folder sketch to the real root-level
+  scripts. 123/123 tests remain green.
 - Unit 09 complete: hardening pass + suite de-duplication. New
   `tests/storage.test.mjs` (7 tests, vm + fake `localStorage` over a Map)
   pins the persistence contract: round-trip, malformed JSON → null,

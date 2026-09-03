@@ -20,23 +20,23 @@ packages required in production. The app is a folder of static files.
 
 ```
 walk-readiness-weather-display/
-├── index.html        # Static shell: card markup + settings form
+├── index.html        # Static shell: setup form + card (banner, grid, sparkline)
 ├── styles.css        # All visual tokens + dark-only theme
-├── app.js            # Bootstrap + orchestration (load → fetch → compute → render)
-├── js/
-│   ├── api.js        # Open-Meteo calls: geocode, forecast, air quality
-│   ├── calc.js       # Dew point, heat index, rules engine (single source of truth)
-│   ├── render.js     # Builds DOM + SVG from computed state
-│   ├── storage.js    # localStorage read/write for saved location
-│   ├── i18n.js       # Bilingual UI copy (EN originals + RU translations)
-│   └── config.js     # Threshold constants + endpoint URLs
-├── netlify.toml      # Static deploy config (optional)
-├── context/          # Project docs (this folder)
-└── spec/             # Build plan + unit specs
+├── config.js         # Threshold constants + endpoint URLs
+├── storage.js        # localStorage read/write for saved location
+├── api.js            # Open-Meteo calls: geocode, forecast, air quality
+├── calc.js           # Dew point, heat index, rules engine (single source of truth)
+├── i18n.js           # Bilingual UI copy (EN originals + RU translations)
+├── render.js         # Builds DOM + SVG from computed state
+├── app.js            # Orchestration: states + location flow + read pipeline
+├── netlify.toml      # Static deploy config (publish = ".")
+├── README.md         # Run / test / deploy instructions
+├── tests/            # node --test suites (one file per unit)
+└── context/          # Project docs (this folder, incl. spec/)
 ```
 
-The exact file layout (single `app.js` vs. a `js/` folder) is finalized in
-the build plan; the responsibility split below is what matters.
+All scripts are plain ordered `<script>` files at the project root (no ES
+modules, no build step); the responsibility split below is what matters.
 
 - `api.js` owns **how to talk to Open-Meteo**: endpoint URLs, query
   construction, and parsing JSON into plain data.
