@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Walk Readiness</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="card">
+    <!-- Setup state: no city saved -->
+    <section id="setup-state" hidden>
+      <h1 class="setup-title">Walk Readiness</h1>
+      <p class="setup-hint">Enter your city to see if it&rsquo;s safe to walk right now.</p>
+      <form id="setup-form">
+        <label class="visually-hidden" for="city-input">City</label>
+        <input
+          id="city-input"
+          name="city"
+          type="text"
+          placeholder="City, e.g. Portland"
+          autocomplete="off"
+          required
+        />
+        <button type="submit" class="btn">Set city</button>
+      </form>
+    </section>
+
+    <!-- Card state: a saved city exists -->
+    <section id="card-state" hidden>
+      <div id="decision-banner" class="banner" aria-live="polite"></div>
+
+      <div class="metrics">
+        <div class="metric">
+          <span class="metric__label">Dew Point</span>
+          <span class="metric__value" id="metric-dew">&mdash;</span>
+        </div>
+        <div class="metric">
+          <span class="metric__label">Heat Index</span>
+          <span class="metric__value" id="metric-heat">&mdash;</span>
+        </div>
+        <div class="metric">
+          <span class="metric__label">AQI</span>
+          <span class="metric__value" id="metric-aqi">&mdash;</span>
+        </div>
+        <div class="metric">
+          <span class="metric__label">Temp</span>
+          <span class="metric__value" id="metric-temp">&mdash;</span>
+        </div>
+      </div>
+
+      <div class="sparkline" id="sparkline"></div>
+
+      <footer class="controls">
+        <span class="city-label" id="city-label">&mdash;</span>
+        <button type="button" class="btn" id="refresh-btn" disabled>Refresh</button>
+      </footer>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
