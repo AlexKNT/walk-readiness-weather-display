@@ -5,11 +5,11 @@ change.
 
 ## Current Phase
 
-- Build in progress — Unit 00 (Project Scaffold) complete.
+- Build in progress — Unit 01 (Config & Storage) complete.
 
 ## Current Goal
 
-- Implement `context/spec/00-build-plan.md` in order; Unit 01 next.
+- Implement `context/spec/00-build-plan.md` in order; Unit 02 next.
 
 ## Completed
 
@@ -27,6 +27,11 @@ change.
 - Unit 00 — Project Scaffold: `index.html`, `styles.css`, `app.js` created.
   Dark-only card shell + setup/card state toggle via `localStorage`; verified
   in a browser with no console errors.
+- Unit 01 — Config & Storage: `config.js` (all thresholds + endpoint URLs as
+  `UPPER_SNAKE_CASE` constants) and `storage.js` (`storage` object with
+  save/load/clear for `walk.location`, malformed → null). `index.html` loads
+  `config.js` + `storage.js` before `app.js`; `app.js` now reads the location
+  via `storage.loadLocation()`. Spec: `context/spec/01-config-storage.md`.
 
 ## In Progress
 
@@ -34,7 +39,7 @@ change.
 
 ## Next Up
 
-- Unit 01 — Config & Storage.
+- Unit 02 — API Client.
 
 ## Open Questions
 
@@ -75,3 +80,9 @@ change.
   `walk.location` and toggles the two states, with a no-op submit handler on
   the city form (wired in Unit 04). Verified in a browser: dark card renders,
   setup state shows with no saved city, zero console errors.
+- Unit 01 complete: `config.js` (thresholds + endpoint URLs as
+  `UPPER_SNAKE_CASE` constants) and `storage.js` (a global `storage` object
+  with `saveLocation`/`loadLocation`/`clearLocation`) added at the project
+  root and loaded before `app.js`. `app.js` now calls `storage.loadLocation()`
+  so malformed saved values read as "no location" and the setup state shows.
+  Verified round-trip and malformed-value handling in the browser console.
