@@ -5,11 +5,11 @@ change.
 
 ## Current Phase
 
-- Build in progress — Unit 06 (Sparkline) complete.
+- Build in progress — Unit 07 (Refresh & Error States) complete.
 
 ## Current Goal
 
-- Implement `context/spec/00-build-plan.md` in order; Unit 07 next.
+- Implement `context/spec/00-build-plan.md` in order; Unit 08 next.
 
 ## Completed
 
@@ -92,6 +92,24 @@ change.
   2 `hourlyHumidity` cases, `conditions.test.mjs` now asserts the
   sparkline pass-through, `location.test.mjs` fake `render` gained a
   `sparkline` no-op. Spec: `context/spec/06-sparkline.md`.
+- Unit 07 — Refresh & Error States: `app.js` now owns three toggled card
+  sub-states — `#loading-state` (fetch in flight, Refresh disabled),
+  `#error-state` (friendly message + Retry), and `#card-content` (banner +
+  metrics + sparkline) — with the controls row always visible. The manual
+  Refresh button and the Retry button both call `refreshConditions()`, which
+  re-runs the full read pipeline for the saved location (falling back to the
+  setup state if none is saved). `loadConditions(location)` is now
+  loading → fetch → compute → render → content, or loading → error; the
+  Unit 05 "NO DATA" fallback is gone (the dedicated error state replaces
+  it). `index.html` wraps the data display in `#card-content` and adds the
+  loading/error sections; `styles.css` styles `.status-message` +
+  `#loading-state`/`#error-state` from tokens only. TDD:
+  `tests/refresh-errors.test.mjs` (8 tests) written first;
+  `conditions.test.mjs` updated (new element ids, failure → error state);
+  `location.test.mjs` fakes gain the new element ids. Verified: 103/103
+  tests green; browser smoke test confirmed Refresh re-fetches without a
+  reload, a simulated failure shows the error state, and Retry recovers —
+  zero page errors. Spec: `context/spec/07-refresh-errors.md`.
 
 ## In Progress
 
@@ -99,7 +117,7 @@ change.
 
 ## Next Up
 
-- Unit 07 — Refresh & Error States (loading / error / retry; never blank).
+- Unit 08 — UI Polish & Responsive.
 
 ## Open Questions
 
@@ -208,4 +226,25 @@ change.
   `render.card` and `render.sparkline(null)` in the fallback. Cross-realm
   note: `hourlyHumidity` is a vm-realm array, so tests compare it via
   `JSON.stringify`, not `deepEqual`.
+- Unit 07 complete: replaced the Unit 05 "NO DATA" fallback with three
+  toggled card sub-states. `index.html` now nests the banner/metrics/
+  sparkline inside `#card-content`, adds `#loading-state` and `#error-state`
+  (with `#retry-btn`), and keeps the controls row (city + Change city +
+  Refresh) as a direct child so it never disappears. `app.js` gained
+  `showLoadingState`/`showErrorState`/`showContentState` (each also toggles
+  `#refresh-btn` disabled via `setRefreshing`) and a single
+  `refreshConditions()` wired to both `#refresh-btn` and `#retry-btn`;
+  `loadConditions` is now loading → fetch → compute → render → content, or
+  loading → error. Testing follows the Unit 05 vm pattern but the fake
+  `document` must now expose the five new ids (`loading-state`,
+  `error-state`, `card-content`, `refresh-btn`, `retry-btn`) because `init()`
+  always looks them up to attach listeners. `conditions.test.mjs`'s failure
+  test now asserts `render.calls.length === 0` + `#error-state` visible
+  (instead of the old fallback card); `location.test.mjs` only needed the
+  extra element ids. New `tests/refresh-errors.test.mjs` covers state
+  toggles, the synchronous loading→content transition, the failure path, the
+  Refresh/Retry click wiring (asserting `api.calls` + `render.calls`
+  increments), and `refreshConditions` falling back to setup with no saved
+  location. Browser smoke: refresh survives a window marker (no reload),
+  simulated failure shows `#error-state`, Retry recovers — zero `pageerror`.
 

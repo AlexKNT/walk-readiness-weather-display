@@ -27,6 +27,11 @@ const ELEMENT_IDS = [
   "setup-error",
   "city-label",
   "change-city-btn",
+  "loading-state",
+  "error-state",
+  "card-content",
+  "refresh-btn",
+  "retry-btn",
 ];
 
 /** The same LocationNotFound class is injected into the vm, so the

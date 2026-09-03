@@ -29,6 +29,11 @@ const ELEMENT_IDS = [
   "setup-error",
   "city-label",
   "change-city-btn",
+  "loading-state",
+  "error-state",
+  "card-content",
+  "refresh-btn",
+  "retry-btn",
 ];
 
 class LocationNotFound extends Error {
@@ -169,7 +174,7 @@ test("loadConditions fetches, computes, and renders a GO decision", async () => 
     aqi: 42,
     hourlyHumidity: [50, 45, 40, 35, 30, 40, 50, 60, 70, 65, 60, 55],
   };
-  const { app, api, render } = loadApp({ onConditions: () => conditions });
+  const { app, api, render, elements } = loadApp({ onConditions: () => conditions });
 
   await app.loadConditions(location);
 
@@ -196,6 +201,12 @@ test("loadConditions fetches, computes, and renders a GO decision", async () => 
     JSON.stringify(render.calls[1].hourlyHumidity),
     JSON.stringify([50, 45, 40, 35, 30, 40, 50, 60, 70, 65, 60, 55]),
   );
+
+  // Success ends in the content sub-state, with Refresh re-enabled.
+  assert.equal(elements["card-content"].hidden, false);
+  assert.equal(elements["loading-state"].hidden, true);
+  assert.equal(elements["error-state"].hidden, true);
+  assert.equal(elements["refresh-btn"].disabled, false);
 });
 
 test("loadConditions computes CAUTION from an elevated AQI", async () => {
@@ -218,8 +229,8 @@ test("loadConditions computes NO-GO from a dangerous dew point", async () => {
   assert.equal(render.calls[0].signals.dewPointSignal, "NO-GO");
 });
 
-test("loadConditions renders the neutral fallback when the fetch fails", async () => {
-  const { app, render } = loadApp({
+test("loadConditions shows the error state (no render) when the fetch fails", async () => {
+  const { app, render, elements } = loadApp({
     onConditions: () => {
       throw new Error("boom");
     },
@@ -227,15 +238,11 @@ test("loadConditions renders the neutral fallback when the fetch fails", async (
 
   await app.loadConditions({ name: "Riga", latitude: 1, longitude: 2 });
 
-  assert.equal(render.calls.length, 2);
-  assert.equal(render.calls[0].kind, "card");
-  assert.equal(render.calls[0].decision, null);
-  assert.equal(render.calls[0].signals.temperature, null);
-  assert.equal(render.calls[0].signals.heatIndex, null);
-  assert.equal(render.calls[0].signals.dewPoint, null);
-  assert.equal(render.calls[0].signals.aqi, null);
-  assert.equal(render.calls[1].kind, "sparkline");
-  assert.equal(render.calls[1].hourlyHumidity, null);
+  assert.equal(render.calls.length, 0);
+  assert.equal(elements["error-state"].hidden, false);
+  assert.equal(elements["loading-state"].hidden, true);
+  assert.equal(elements["card-content"].hidden, true);
+  assert.equal(elements["refresh-btn"].disabled, false);
 });
 
 /* ------------------------------------------------------------------ */

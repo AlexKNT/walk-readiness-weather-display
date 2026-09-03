@@ -1,11 +1,12 @@
 "use strict";
 
 /**
- * Unit 05 — current conditions & decision (orchestration only).
+ * Orchestration only — the glue that wires the four boundaries together.
  *
- * Builds on the Unit 04 location flow: once a location is known, run the
- * read path — fetch current conditions + AQI, compute the derived signals
- * and decision, and hand the result to `render`.
+ * It owns the app's states (setup / loading / error / content), the
+ * location flow (first-run city entry + change city), and the read pipeline
+ * (fetch → compute → render) triggered on load, on city entry, and by the
+ * Refresh / Retry buttons.
  *
  * No business rules here (those live in `calc.js`), no networking (that
  * lives in `api.js`), no DOM drawing (that lives in `render.js`), and no
@@ -43,10 +44,38 @@ function showCardState(location) {
   getElement("city-label").textContent = location.name;
 }
 
+/** Show the loading sub-state inside the card, disabling Refresh. */
+function showLoadingState() {
+  getElement("loading-state").hidden = false;
+  getElement("error-state").hidden = true;
+  getElement("card-content").hidden = true;
+  setRefreshing(true);
+}
+
+/** Show the error sub-state inside the card, re-enabling Refresh. */
+function showErrorState() {
+  getElement("loading-state").hidden = true;
+  getElement("error-state").hidden = false;
+  getElement("card-content").hidden = true;
+  setRefreshing(false);
+}
+
+/** Show the rendered data inside the card, re-enabling Refresh. */
+function showContentState() {
+  getElement("loading-state").hidden = true;
+  getElement("error-state").hidden = true;
+  getElement("card-content").hidden = false;
+  setRefreshing(false);
+}
+
 function setSubmitting(submitting) {
   const submitBtn = getElement("setup-submit");
   submitBtn.disabled = submitting;
   submitBtn.textContent = submitting ? "Finding city…" : "Set city";
+}
+
+function setRefreshing(refreshing) {
+  getElement("refresh-btn").disabled = refreshing;
 }
 
 /**
@@ -110,14 +139,15 @@ function handleChangeCity() {
 /**
  * Run the read pipeline for a saved location: fetch → compute → render.
  *
- * On any failure it renders the neutral fallback (a "NO DATA" banner and
- * em-dash metrics) so the page never blanks. Unit 07 replaces this minimal
- * fallback with proper loading/error/retry states.
+ * The card shows a loading sub-state while the fetch is in flight, the
+ * rendered content on success, and the error sub-state (with Retry) on
+ * failure — so the page never blanks (invariant 8).
  *
  * @param {{ name: string, latitude: number, longitude: number }} location
  * @returns {Promise<void>}
  */
 async function loadConditions(location) {
+  showLoadingState();
   try {
     const current = await api.fetchCurrentConditions(
       location.latitude,
@@ -131,15 +161,31 @@ async function loadConditions(location) {
     );
     render.card(signals, decision);
     render.sparkline(current.hourlyHumidity);
+    showContentState();
   } catch (err) {
-    render.card(calc.deriveSignals(null), null);
-    render.sparkline(null);
+    showErrorState();
   }
+}
+
+/**
+ * Re-run the read pipeline for the currently saved location. Used by both
+ * the Refresh and Retry buttons. Falls back to setup when no location is
+ * saved (e.g. the city was cleared).
+ */
+function refreshConditions() {
+  const location = storage.loadLocation();
+  if (!location) {
+    showSetupState();
+    return;
+  }
+  loadConditions(location);
 }
 
 function init() {
   getElement("setup-form").addEventListener("submit", handleSubmit);
   getElement("change-city-btn").addEventListener("click", handleChangeCity);
+  getElement("refresh-btn").addEventListener("click", refreshConditions);
+  getElement("retry-btn").addEventListener("click", refreshConditions);
 
   const location = storage.loadLocation();
   if (location) {
@@ -158,6 +204,10 @@ const app = {
   showSetupState,
   showCardState,
   loadConditions,
+  refreshConditions,
+  showLoadingState,
+  showErrorState,
+  showContentState,
 };
 
 init();
