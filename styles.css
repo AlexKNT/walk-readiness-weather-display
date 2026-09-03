@@ -187,6 +187,32 @@ body {
   border: 1px dashed var(--border);
   border-radius: var(--radius-md);
   margin-bottom: 24px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sparkline__svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.sparkline__line {
+  fill: none;
+  stroke: var(--text-muted);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sparkline__point {
+  fill: var(--text);
+}
+
+.sparkline__band {
+  fill: var(--border);
 }
 
 /* Controls */

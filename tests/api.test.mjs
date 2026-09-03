@@ -333,6 +333,37 @@ test("fetchCurrentConditions normalizes missing current fields to null", async (
   assert.equal(current.relativeHumidity, null);
   assert.equal(current.dewPoint, null);
   assert.equal(current.aqi, null);
+  assert.equal(current.hourlyHumidity, null);
+});
+
+test("fetchCurrentConditions returns the hourly humidity series", async () => {
+  const fetch = makeFetch((url) => {
+    if (url.includes("air-quality")) return jsonResponse(airQualityBody);
+    return jsonResponse({
+      current: { temperature_2m: 21.3, relative_humidity_2m: 55, dew_point_2m: 11.8 },
+      hourly: { relative_humidity_2m: [55, 54, 53, null, 60] },
+    });
+  });
+  const { api } = loadApi(fetch);
+
+  const current = await api.fetchCurrentConditions(56.9, 24.1);
+
+  assert.equal(
+    JSON.stringify(current.hourlyHumidity),
+    JSON.stringify([55, 54, 53, null, 60]),
+  );
+});
+
+test("fetchCurrentConditions returns null hourlyHumidity when hourly is missing", async () => {
+  const fetch = makeFetch((url) => {
+    if (url.includes("air-quality")) return jsonResponse(airQualityBody);
+    return jsonResponse({ current: { temperature_2m: 21.3 }, hourly: {} });
+  });
+  const { api } = loadApi(fetch);
+
+  const current = await api.fetchCurrentConditions(56.9, 24.1);
+
+  assert.equal(current.hourlyHumidity, null);
 });
 
 test("fetchCurrentConditions throws ApiError when either endpoint fails", async () => {

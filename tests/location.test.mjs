@@ -129,7 +129,7 @@ function makeCalc() {
 
 /** A no-op render — the location flow tests don't assert on drawing. */
 function makeRender() {
-  return { card() {} };
+  return { card() {}, sparkline() {} };
 }
 
 /** Load app.js in a fresh vm realm with the fakes injected. */

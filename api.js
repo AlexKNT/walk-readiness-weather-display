@@ -125,6 +125,24 @@ function currentValue(value) {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
+/**
+ * Coerce an Open-Meteo hourly series to an array of finite numbers, with
+ * absent/non-numeric entries as `null`, or null when the series itself is
+ * missing. The array keeps its original length so hour alignment is
+ * preserved for the sparkline.
+ *
+ * @param {unknown} values
+ * @returns {Array<number | null> | null}
+ */
+function hourlyValues(values) {
+  if (!Array.isArray(values)) {
+    return null;
+  }
+  return values.map((value) =>
+    typeof value === "number" && Number.isFinite(value) ? value : null,
+  );
+}
+
 /** @param {string} cityName @returns {string} */
 function geocodingUrl(cityName) {
   return (
@@ -237,6 +255,7 @@ const api = {
    *   relativeHumidity: number | null,
    *   dewPoint: number | null,
    *   aqi: number | null,
+   *   hourlyHumidity: Array<number | null> | null,
    * }>}
    * @throws {ApiError}
    */
@@ -250,6 +269,7 @@ const api = {
       relativeHumidity: currentValue(forecast.current.relative_humidity_2m),
       dewPoint: currentValue(forecast.current.dew_point_2m),
       aqi: currentValue(airQuality.current.us_aqi),
+      hourlyHumidity: hourlyValues(forecast.hourly.relative_humidity_2m),
     };
   },
 };

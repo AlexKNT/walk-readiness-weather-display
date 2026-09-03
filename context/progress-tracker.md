@@ -5,11 +5,11 @@ change.
 
 ## Current Phase
 
-- Build in progress — Unit 05 (Current Conditions & Decision) complete.
+- Build in progress — Unit 06 (Sparkline) complete.
 
 ## Current Goal
 
-- Implement `context/spec/00-build-plan.md` in order; Unit 06 next.
+- Implement `context/spec/00-build-plan.md` in order; Unit 07 next.
 
 ## Completed
 
@@ -75,6 +75,23 @@ change.
   fakes updated to inject `calc`/`render` + a `fetchCurrentConditions` stub.
   Verified: 83/83 tests green (`node --test`, 5 files). Spec:
   `context/spec/05-current-conditions.md`.
+- Unit 06 — Sparkline: `api.fetchCurrentConditions` now also returns
+  `hourlyHumidity` (the normalized `relative_humidity_2m` hourly series) via
+  a new `hourlyValues` normalizer — no extra network call, since the hourly
+  data already arrives with `fetchForecast`. `render.js` gained the
+  sparkline drawing: `sparklineValue`/`sparklinePoints`/`lowestHumidityIndex`
+  helpers plus `render.sparkline(humidity)` (inline SVG polyline + one point
+  per hour + a highlight `<rect>` over the lowest-humidity hour) and
+  `render.lowestHumidityIndex` (exposed for tests). Geometry lives in
+  `config.js` as `SPARKLINE_*` constants (no magic numbers in `render.js`);
+  the band/line/points use only `--border`/`--text-muted`/`--text` tokens (no
+  status colors). `app.js` calls `render.sparkline(current.hourlyHumidity)`
+  after `render.card` (and `render.sparkline(null)` in the fallback).
+  `styles.css` styled `.sparkline__svg/__line/__point/__band`. TDD:
+  `tests/sparkline.test.mjs` (11 tests) written first; `api.test.mjs` gained
+  2 `hourlyHumidity` cases, `conditions.test.mjs` now asserts the
+  sparkline pass-through, `location.test.mjs` fake `render` gained a
+  `sparkline` no-op. Spec: `context/spec/06-sparkline.md`.
 
 ## In Progress
 
@@ -82,7 +99,7 @@ change.
 
 ## Next Up
 
-- Unit 06 — Sparkline (12-hour humidity SVG + lowest-humidity window).
+- Unit 07 — Refresh & Error States (loading / error / retry; never blank).
 
 ## Open Questions
 
@@ -174,3 +191,21 @@ change.
   `render` fakes, because the read path now runs for any saved location;
   the success-submit test dropped its exact `api.calls.length` assertion
   since geocoding is now followed by a conditions fetch.
+- Unit 06 complete: `api.fetchCurrentConditions` now also returns
+  `hourlyHumidity` (normalized `relative_humidity_2m` hourly series, missing
+  entries → `null`, absent series → `null`) via a new `hourlyValues`
+  normalizer — the hourly data already rides along on `fetchForecast`, so no
+  extra request. `render.js` gained the sparkline: `sparklineValue` (Number()
+  coercion), `sparklinePoints` (index-preserving x/y mapping over a fixed
+  0–100% humidity domain), `lowestHumidityIndex` (first min index, -1 if
+  none), `render.sparkline(humidity)` (polyline + one `<circle>` per finite
+  point + a highlight `<rect>` over the lowest hour, assembled from numeric
+  values only), and `render.lowestHumidityIndex` exposed for tests. Geometry
+  constants (`SPARKLINE_*`) live in `config.js` per the "no magic numbers in
+  render.js" rule; the band uses `--border`, line `--text-muted`, points
+  `--text` (status colors remain reserved for the banner + matching metric).
+  `app.js` calls `render.sparkline(current.hourlyHumidity)` after
+  `render.card` and `render.sparkline(null)` in the fallback. Cross-realm
+  note: `hourlyHumidity` is a vm-realm array, so tests compare it via
+  `JSON.stringify`, not `deepEqual`.
+

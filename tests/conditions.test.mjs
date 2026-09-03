@@ -85,13 +85,16 @@ function makeStorage(location = null) {
   };
 }
 
-/** A fake render that records every card render for later assertion. */
+/** A fake render that records every card + sparkline render for assertion. */
 function makeRender() {
   const calls = [];
   return {
     calls,
     card(signals, decision) {
       calls.push({ kind: "card", signals, decision });
+    },
+    sparkline(hourlyHumidity) {
+      calls.push({ kind: "sparkline", hourlyHumidity });
     },
   };
 }
@@ -159,7 +162,13 @@ function flush() {
 
 test("loadConditions fetches, computes, and renders a GO decision", async () => {
   const location = { name: "Riga", latitude: 56.9496, longitude: 24.1052 };
-  const conditions = { temperature: 20, relativeHumidity: 50, dewPoint: 10, aqi: 42 };
+  const conditions = {
+    temperature: 20,
+    relativeHumidity: 50,
+    dewPoint: 10,
+    aqi: 42,
+    hourlyHumidity: [50, 45, 40, 35, 30, 40, 50, 60, 70, 65, 60, 55],
+  };
   const { app, api, render } = loadApp({ onConditions: () => conditions });
 
   await app.loadConditions(location);
@@ -171,7 +180,7 @@ test("loadConditions fetches, computes, and renders a GO decision", async () => 
     longitude: 24.1052,
   });
 
-  assert.equal(render.calls.length, 1);
+  assert.equal(render.calls.length, 2);
   assert.equal(render.calls[0].kind, "card");
   assert.equal(render.calls[0].decision, "GO");
   assert.equal(render.calls[0].signals.temperature, 20);
@@ -181,6 +190,12 @@ test("loadConditions fetches, computes, and renders a GO decision", async () => 
   assert.equal(render.calls[0].signals.heatIndexSignal, "GO");
   assert.equal(render.calls[0].signals.dewPointSignal, "GO");
   assert.equal(render.calls[0].signals.aqiSignal, "GO");
+
+  assert.equal(render.calls[1].kind, "sparkline");
+  assert.equal(
+    JSON.stringify(render.calls[1].hourlyHumidity),
+    JSON.stringify([50, 45, 40, 35, 30, 40, 50, 60, 70, 65, 60, 55]),
+  );
 });
 
 test("loadConditions computes CAUTION from an elevated AQI", async () => {
@@ -212,13 +227,15 @@ test("loadConditions renders the neutral fallback when the fetch fails", async (
 
   await app.loadConditions({ name: "Riga", latitude: 1, longitude: 2 });
 
-  assert.equal(render.calls.length, 1);
+  assert.equal(render.calls.length, 2);
   assert.equal(render.calls[0].kind, "card");
   assert.equal(render.calls[0].decision, null);
   assert.equal(render.calls[0].signals.temperature, null);
   assert.equal(render.calls[0].signals.heatIndex, null);
   assert.equal(render.calls[0].signals.dewPoint, null);
   assert.equal(render.calls[0].signals.aqi, null);
+  assert.equal(render.calls[1].kind, "sparkline");
+  assert.equal(render.calls[1].hourlyHumidity, null);
 });
 
 /* ------------------------------------------------------------------ */
@@ -243,7 +260,7 @@ test("init runs the read path when a location is already saved", async () => {
   assert.equal(elements["card-state"].hidden, false);
   assert.equal(elements["setup-state"].hidden, true);
   assert.equal(api.calls.length, 1);
-  assert.equal(render.calls.length, 1);
+  assert.equal(render.calls.length, 2);
 });
 
 test("setting a city geocodes and immediately runs the read path", async () => {
@@ -263,6 +280,6 @@ test("setting a city geocodes and immediately runs the read path", async () => {
     latitude: 1,
     longitude: 2,
   });
-  assert.equal(render.calls.length, 1);
+  assert.equal(render.calls.length, 2);
   assert.equal(render.calls[0].kind, "card");
 });

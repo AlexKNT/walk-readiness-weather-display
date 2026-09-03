@@ -130,8 +130,10 @@ async function loadConditions(location) {
       signals.dewPoint,
     );
     render.card(signals, decision);
+    render.sparkline(current.hourlyHumidity);
   } catch (err) {
     render.card(calc.deriveSignals(null), null);
+    render.sparkline(null);
   }
 }
 

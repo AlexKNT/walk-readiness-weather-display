@@ -3,9 +3,10 @@
 /**
  * Central configuration for the Walk Readiness app.
  *
- * Every threshold and endpoint URL lives here as a named UPPER_SNAKE_CASE
- * constant so tuning never requires hunting through `calc.js` or `api.js`.
- * The decision bands below match `project-overview.md` exactly.
+ * Every threshold, endpoint URL, and shared display constant lives here as a
+ * named UPPER_SNAKE_CASE value so tuning never requires hunting through
+ * `calc.js`, `api.js`, or `render.js`. The decision bands below match
+ * `project-overview.md` exactly.
  */
 
 /* ============================== */
@@ -61,3 +62,15 @@ const FORECAST_HOURS = 12;
 const TIMEZONE = "auto";
 const GEOCODING_RESULT_COUNT = 1;
 const GEOCODING_LANGUAGE = "en";
+
+/* ============================== */
+/* Sparkline geometry (render.js) */
+/* ============================== */
+
+const SPARKLINE_WIDTH = 600;
+const SPARKLINE_HEIGHT = 120;
+const SPARKLINE_PAD_X = 16;
+const SPARKLINE_PAD_Y = 16;
+const SPARKLINE_POINT_RADIUS = 3;
+const SPARKLINE_HUMIDITY_MIN = 0;
+const SPARKLINE_HUMIDITY_MAX = 100;
