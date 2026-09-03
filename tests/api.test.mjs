@@ -284,6 +284,64 @@ test("fetchAirQuality throws ApiError on non-finite coordinates without fetching
 });
 
 /* ------------------------------------------------------------------ */
+/* fetchCurrentConditions                                             */
+/* ------------------------------------------------------------------ */
+
+test("fetchCurrentConditions combines current values from both endpoints", async () => {
+  const fetch = makeFetch((url) => {
+    if (url.includes("air-quality")) return jsonResponse(airQualityBody);
+    return jsonResponse(forecastBody);
+  });
+  const { api } = loadApi(fetch);
+
+  const current = await api.fetchCurrentConditions(56.9496, 24.1052);
+
+  assert.equal(current.temperature, 21.3);
+  assert.equal(current.relativeHumidity, 55);
+  assert.equal(current.dewPoint, 11.8);
+  assert.equal(current.aqi, 42);
+  assert.equal(fetch.calls.length, 2);
+});
+
+test("fetchCurrentConditions calls both endpoints", async () => {
+  const fetch = makeFetch((url) => {
+    if (url.includes("air-quality")) return jsonResponse(airQualityBody);
+    return jsonResponse(forecastBody);
+  });
+  const { api } = loadApi(fetch);
+
+  await api.fetchCurrentConditions(56.9, 24.1);
+
+  const urls = fetch.calls;
+  assert.equal(urls.length, 2);
+  assert.ok(urls.some((u) => u.startsWith("https://api.open-meteo.com/v1/forecast?")));
+  assert.ok(urls.some((u) => u.startsWith("https://air-quality-api.open-meteo.com/v1/air-quality?")));
+});
+
+test("fetchCurrentConditions normalizes missing current fields to null", async () => {
+  const fetch = makeFetch((url) => {
+    if (url.includes("air-quality")) {
+      return jsonResponse({ current: {}, hourly: {} });
+    }
+    return jsonResponse({ current: { temperature_2m: 21.3 }, hourly: {} });
+  });
+  const { api } = loadApi(fetch);
+
+  const current = await api.fetchCurrentConditions(56.9, 24.1);
+
+  assert.equal(current.temperature, 21.3);
+  assert.equal(current.relativeHumidity, null);
+  assert.equal(current.dewPoint, null);
+  assert.equal(current.aqi, null);
+});
+
+test("fetchCurrentConditions throws ApiError when either endpoint fails", async () => {
+  const { api, ApiError } = loadApi(() => jsonResponse({}, 500));
+
+  await assert.rejects(api.fetchCurrentConditions(56.9, 24.1), ApiError);
+});
+
+/* ------------------------------------------------------------------ */
 /* Error classes                                                      */
 /* ------------------------------------------------------------------ */
 

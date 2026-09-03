@@ -5,11 +5,11 @@ change.
 
 ## Current Phase
 
-- Build in progress — Unit 04 (Location Flow) complete.
+- Build in progress — Unit 05 (Current Conditions & Decision) complete.
 
 ## Current Goal
 
-- Implement `context/spec/00-build-plan.md` in order; Unit 05 next.
+- Implement `context/spec/00-build-plan.md` in order; Unit 06 next.
 
 ## Completed
 
@@ -58,6 +58,23 @@ change.
   `tests/location.test.mjs` (11 tests, vm + fake `document`/`storage`/`api`/
   `LocationNotFound`). Verified: 62/62 tests green (`node --test`). Spec:
   `context/spec/04-location-flow.md`.
+- Unit 05 — Current Conditions & Decision: the core read path. `api.js`
+  gained `fetchCurrentConditions(lat, lon)` (calls forecast + AQI in parallel,
+  normalizes missing current values to `null`). New `render.js` (global
+  `render` object: `decision`, `metricValue`, `metrics`, `card`) owns banner
+  text/class + metric formatting + the "matching metric" tint; it re-derives
+  no thresholds. `app.js` gained `loadConditions(location)` —
+  fetchCurrentConditions → deriveSignals → decide → render.card — with a
+  neutral never-blank fallback (`render.card(deriveSignals(null), null)`) on
+  failure; `init()` runs it when a location is saved, and a successful city
+  submit runs it immediately after geocoding. `index.html` loads
+  `render.js` before `app.js`; `styles.css` gained `.banner--*` and
+  `.metric__value--*` status accents (token-only). TDD:
+  `tests/render.test.mjs` (11), `tests/conditions.test.mjs` (7), plus 4 new
+  `fetchCurrentConditions` cases in `tests/api.test.mjs`; `location.test.mjs`
+  fakes updated to inject `calc`/`render` + a `fetchCurrentConditions` stub.
+  Verified: 83/83 tests green (`node --test`, 5 files). Spec:
+  `context/spec/05-current-conditions.md`.
 
 ## In Progress
 
@@ -65,7 +82,7 @@ change.
 
 ## Next Up
 
-- Unit 05 — Current Conditions & Decision.
+- Unit 06 — Sparkline (12-hour humidity SVG + lowest-humidity window).
 
 ## Open Questions
 
@@ -142,3 +159,18 @@ change.
   Note: `app.js` (unlike `config`/`api`/`calc`/`storage`) touches the DOM on
   load, so the vm test must always inject a fake `document` before the script
   runs.
+- Unit 05 complete: introduced the `render.js` boundary named in
+  `architecture.md` (the build plan's Unit 05 is the first unit that draws,
+  so `render.js` lands here rather than as its own unit). `app.js` stays
+  orchestration-only: it calls `api.fetchCurrentConditions`, `calc.deriveSignals`,
+  `calc.decide`, then `render.card`. The read path fires whenever the card
+  state becomes visible — from `init()` for a saved location, and from a
+  successful city submit immediately after geocoding (so a first-run user
+  sees the answer without a reload). The never-blank fallback for a failed
+  fetch is deliberately minimal (`render.card(deriveSignals(null), null)` =
+  "NO DATA" banner + em-dash metrics); Unit 07 replaces it with real
+  loading/error/retry states. `location.test.mjs` needed its fake `api` to
+  gain a `fetchCurrentConditions` stub and the vm sandbox to gain `calc` +
+  `render` fakes, because the read path now runs for any saved location;
+  the success-submit test dropped its exact `api.calls.length` assertion
+  since geocoding is now followed by a conditions fetch.

@@ -122,6 +122,19 @@ body {
   color: var(--text);
 }
 
+/* Banner status accents */
+.banner--go {
+  color: var(--green);
+}
+
+.banner--caution {
+  color: var(--yellow);
+}
+
+.banner--no-go {
+  color: var(--red);
+}
+
 /* Metrics grid */
 .metrics {
   display: grid;
@@ -153,6 +166,19 @@ body {
   font-weight: 700;
   font-size: clamp(1.5rem, 5vw, 2rem);
   color: var(--text);
+}
+
+/* Metric value status accents (the matching metric only) */
+.metric__value--go {
+  color: var(--green);
+}
+
+.metric__value--caution {
+  color: var(--yellow);
+}
+
+.metric__value--no-go {
+  color: var(--red);
 }
 
 /* Sparkline */

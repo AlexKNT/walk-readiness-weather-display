@@ -113,6 +113,18 @@ function requireCoordinates(latitude, longitude) {
   }
 }
 
+/**
+ * Coerce a single Open-Meteo current value to a finite number, or null when
+ * it is absent or non-numeric. This keeps the shape returned by
+ * `fetchCurrentConditions` clean: every field is a number or null.
+ *
+ * @param {unknown} value
+ * @returns {number | null}
+ */
+function currentValue(value) {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
 /** @param {string} cityName @returns {string} */
 function geocodingUrl(cityName) {
   return (
@@ -211,5 +223,33 @@ const api = {
     requireSection(data, "current", "Air quality");
     requireSection(data, "hourly", "Air quality");
     return data;
+  },
+
+  /**
+   * Fetch the current conditions from the forecast and air-quality endpoints
+   * in parallel, and normalize them into a plain object shaped for
+   * `calc.deriveSignals`. A missing current value becomes `null`.
+   *
+   * @param {number} latitude
+   * @param {number} longitude
+   * @returns {Promise<{
+   *   temperature: number | null,
+   *   relativeHumidity: number | null,
+   *   dewPoint: number | null,
+   *   aqi: number | null,
+   * }>}
+   * @throws {ApiError}
+   */
+  async fetchCurrentConditions(latitude, longitude) {
+    const [forecast, airQuality] = await Promise.all([
+      api.fetchForecast(latitude, longitude),
+      api.fetchAirQuality(latitude, longitude),
+    ]);
+    return {
+      temperature: currentValue(forecast.current.temperature_2m),
+      relativeHumidity: currentValue(forecast.current.relative_humidity_2m),
+      dewPoint: currentValue(forecast.current.dew_point_2m),
+      aqi: currentValue(airQuality.current.us_aqi),
+    };
   },
 };

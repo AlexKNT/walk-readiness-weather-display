@@ -90,7 +90,8 @@ function makeStorage(initialLocation = null) {
   };
 }
 
-/** A fake api whose geocode records the city and resolves a location. */
+/** A fake api whose geocode records the city and resolves a location, plus a
+ *  `fetchCurrentConditions` stub so `init()` can run the read path. */
 function makeApi({ onGeocode } = {}) {
   const calls = [];
   return {
@@ -102,7 +103,33 @@ function makeApi({ onGeocode } = {}) {
       }
       return { name: city, latitude: 56.9496, longitude: 24.1052 };
     },
+    async fetchCurrentConditions() {
+      calls.push("fetchCurrentConditions");
+      return { temperature: 20, relativeHumidity: 50, dewPoint: 10, aqi: 42 };
+    },
   };
+}
+
+/** A minimal fake calc — the location flow never needs real rules. */
+function makeCalc() {
+  return {
+    deriveSignals: () => ({
+      temperature: null,
+      relativeHumidity: null,
+      dewPoint: null,
+      heatIndex: null,
+      aqi: null,
+      heatIndexSignal: null,
+      dewPointSignal: null,
+      aqiSignal: null,
+    }),
+    decide: () => null,
+  };
+}
+
+/** A no-op render — the location flow tests don't assert on drawing. */
+function makeRender() {
+  return { card() {} };
 }
 
 /** Load app.js in a fresh vm realm with the fakes injected. */
@@ -115,6 +142,8 @@ function loadApp({ storage, api, location } = {}) {
     document,
     storage: effectiveStorage,
     api: effectiveApi,
+    calc: makeCalc(),
+    render: makeRender(),
     LocationNotFound,
   };
 
@@ -227,7 +256,6 @@ test("submit geocodes, persists, and switches to the card state", async () => {
   elements["city-input"].value = "  Riga  ";
   await elements["setup-form"].listeners.submit({ preventDefault() {} });
 
-  assert.equal(api.calls.length, 1);
   assert.equal(api.calls[0], "Riga");
   assert.equal(storage.calls.save.length, 1);
   assert.equal(elements["setup-state"].hidden, true);

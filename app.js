@@ -1,17 +1,16 @@
 "use strict";
 
 /**
- * Unit 04 — location flow (orchestration only).
+ * Unit 05 — current conditions & decision (orchestration only).
  *
- * Reads the saved location and toggles between the setup state (no city) and
- * the card state (city saved). Wires the first-run city form: geocode the
- * typed city, persist it, and proceed to the card — or show an inline error
- * when geocoding fails. "Change city" clears the saved location and returns
- * to the setup form.
+ * Builds on the Unit 04 location flow: once a location is known, run the
+ * read path — fetch current conditions + AQI, compute the derived signals
+ * and decision, and hand the result to `render`.
  *
  * No business rules here (those live in `calc.js`), no networking (that
- * lives in `api.js`), and no persistence (that lives in `storage.js`). This
- * file only orchestrates the three.
+ * lives in `api.js`), no DOM drawing (that lives in `render.js`), and no
+ * persistence (that lives in `storage.js`). This file only orchestrates the
+ * four.
  */
 
 const SETUP_ERRORS = {
@@ -96,6 +95,7 @@ async function handleSubmit(event) {
   if (result.location) {
     getElement("city-input").value = "";
     showCardState(result.location);
+    loadConditions(result.location);
   } else {
     showSetupState(SETUP_ERRORS[result.error] ?? SETUP_ERRORS.api);
   }
@@ -107,6 +107,34 @@ function handleChangeCity() {
   showSetupState();
 }
 
+/**
+ * Run the read pipeline for a saved location: fetch → compute → render.
+ *
+ * On any failure it renders the neutral fallback (a "NO DATA" banner and
+ * em-dash metrics) so the page never blanks. Unit 07 replaces this minimal
+ * fallback with proper loading/error/retry states.
+ *
+ * @param {{ name: string, latitude: number, longitude: number }} location
+ * @returns {Promise<void>}
+ */
+async function loadConditions(location) {
+  try {
+    const current = await api.fetchCurrentConditions(
+      location.latitude,
+      location.longitude,
+    );
+    const signals = calc.deriveSignals(current);
+    const decision = calc.decide(
+      signals.heatIndex,
+      signals.aqi,
+      signals.dewPoint,
+    );
+    render.card(signals, decision);
+  } catch (err) {
+    render.card(calc.deriveSignals(null), null);
+  }
+}
+
 function init() {
   getElement("setup-form").addEventListener("submit", handleSubmit);
   getElement("change-city-btn").addEventListener("click", handleChangeCity);
@@ -114,6 +142,7 @@ function init() {
   const location = storage.loadLocation();
   if (location) {
     showCardState(location);
+    loadConditions(location);
   } else {
     showSetupState();
   }
@@ -126,6 +155,7 @@ const app = {
   handleChangeCity,
   showSetupState,
   showCardState,
+  loadConditions,
 };
 
 init();
