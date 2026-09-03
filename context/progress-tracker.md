@@ -5,11 +5,11 @@ change.
 
 ## Current Phase
 
-- Build in progress — Unit 02 (API Client) complete.
+- Build in progress — Unit 03 (Domain Logic) complete.
 
 ## Current Goal
 
-- Implement `context/spec/00-build-plan.md` in order; Unit 03 next.
+- Implement `context/spec/00-build-plan.md` in order; Unit 04 next.
 
 ## Completed
 
@@ -39,6 +39,15 @@ change.
   mocked `fetch`) written first, then implementation. Verified: tests green,
   live Open-Meteo calls succeed with no key in Node and in a browser with
   zero console errors. Spec: `context/spec/02-api-client.md`.
+- Unit 03 — Domain Logic: `calc.js` (global `calc` object with
+  `dewPointFallback` Magnus, `heatIndex` NOAA Rothfusz, `classifyHeatIndex`/
+  `classifyAqi`/`classifyDewPoint`, `deriveSignals`, `decide` = worst of three
+  signals) added at project root and loaded after `api.js`. Pure and DOM-free;
+  all thresholds read from `config.js`; absence normalizes to `null` and null
+  signals are skipped by `decide`. TDD: `tests/calc.test.mjs` (31 tests)
+  written first. Verified: 51/51 tests green (`node --test`), every band
+  boundary asserted (AQI 50/51/150/151, heat index 26.9/27/39, dew point
+  12.9/13/21/21.1). Spec: `context/spec/03-domain-logic.md`.
 
 ## In Progress
 
@@ -46,14 +55,12 @@ change.
 
 ## Next Up
 
-- Unit 03 — Domain Logic.
+- Unit 04 — Location Flow.
 
 ## Open Questions
 
 - Netlify deploy mechanics (git-connected vs. drag-and-drop) — decide in the
   deploy unit.
-- Whether to add the optional `tests/` folder with Node's built-in runner for
-  the rules engine — decide in Unit 03.
 
 ## Architecture Decisions
 
@@ -103,3 +110,12 @@ change.
   (2) `instanceof Error` fails across realms — compare against the realm's
   own `Error`. Live smoke: all three calls succeed against Open-Meteo with no
   key, in Node and in the browser (zero console errors).
+- Unit 03 complete: `calc.js` written TDD-first against `tests/calc.test.mjs`
+  (Node's built-in runner, same `vm` pattern as Unit 02, but exposing `calc`
+  with no injected `fetch`). The `tests/` folder question is now resolved:
+  keep it, one file per unit (`tests/*.test.mjs`). `decide` is the pure
+  `(heatIndex, aqi, dewPoint)` worst-of-three function from the standards;
+  `deriveSignals` is the higher-level shape that turns raw current conditions
+  into computed values + per-signal classification for the render layer
+  (Unit 05). Cross-realm note for `deriveSignals`: assert fields individually,
+  not `deepStrictEqual`. `index.html` now loads `calc.js` after `api.js`.

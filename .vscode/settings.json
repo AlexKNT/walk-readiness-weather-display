@@ -3,6 +3,10 @@
         "/^node --test tests/api\\.test\\.mjs$/": {
             "approve": true,
             "matchCommandLine": true
+        },
+        "/^node --test tests/api\\.test\\.mjs tests/calc\\.test\\.mjs$/": {
+            "approve": true,
+            "matchCommandLine": true
         }
     }
 }
